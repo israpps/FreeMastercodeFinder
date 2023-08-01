@@ -50,3 +50,7 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+*.depend
+*.layout
+_build/*/????_???.??
+build/
