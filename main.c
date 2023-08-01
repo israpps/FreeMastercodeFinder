@@ -36,7 +36,7 @@ int main(int argc, char** argv)
 {
     if (argc > 1)
     {
-        int i, P;
+        int i, P, X = 0;
         if (argc > 2)
         {
             for (i=2; i<argc; i++)
@@ -82,6 +82,7 @@ int main(int argc, char** argv)
 	    {
 	    	if (REP->results_list[i].target_address)
 	    	{
+	    	    X++;
 	    	    if (CTX & ONLY_SUITABLE_MASTERCODE) // dont print
 	    	        ;
 	    	    else if (CTX & PS2RD_ALA) {
@@ -105,6 +106,10 @@ int main(int argc, char** argv)
                     P = i;
                 }
 	    	}
+	    }
+	    if (X == 0) {
+            fprintf(stderr, "Could not find any mastercode\n");
+            return 1;
 	    }
 	    if (P == -1) P = 0; // no sceSifSendCmd found, fall back to the last mastercode found...
 	    if (CTX & ONLY_SUITABLE_MASTERCODE)
