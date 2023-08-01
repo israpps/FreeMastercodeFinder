@@ -4,7 +4,8 @@
 
 #define SHIFT(N) (1 << N)
 
-enum FLG {
+enum FLG
+{
     CRUDE = SHIFT(2),
     NO_CRC = SHIFT(3),
     PS2RD_ALA = SHIFT(4),
@@ -18,8 +19,8 @@ int CTX = 0x0;
 void help(void)
 {
     printf("FreeMastercodeFinder by El_isra\n\tbased on PS2Rd by Aaron Clovsky <pelvicthrustman@gmail.com>\n"
-            "compilation " __DATE__ " - " __TIME__ "\n"
-        );
+           "compilation " __DATE__ " - " __TIME__ "\n"
+          );
     printf("usage:\n"
            "FreeMastercodeFinder <PS2 ELF path> extra_flags...\n\n"
            "available flags: (text inside parenthesis is abbreviated flag)\n"
@@ -29,7 +30,7 @@ void help(void)
            " --ps2rd-comment-mastercode (-c) : only works with '--ps2rd-style' or '--only-suitable-mastercode'. the mastercode will have a leading comment with the corresponding function name\n"
            " --only-suitable-mastercode (-s) : instead of printing all mastercodes, only display the 'sceSifSendCmd' Mastercode, if not found, first found Mastercode is chosen instead...\n"
            " --detailed-report (-d)          : print the detailed report written by the PS2RD ELF analyzer algo\n"
-           );
+          );
 }
 
 int main(int argc, char** argv)
@@ -62,12 +63,12 @@ int main(int argc, char** argv)
         }
         report_t* REP = elf_analyze(argv[1]);
 
-	    if (!REP)
-	    {
+        if (!REP)
+        {
             fprintf(stderr, "### ERROR: report is NULL\n");
-	    	return 1;
-	    }
-	    if (REP->results < 1)
+            return 1;
+        }
+        if (REP->results < 1)
         {
             fprintf(stderr, "### ERROR: no results found (%d)\n", REP->results);
             return 1;
@@ -78,48 +79,58 @@ int main(int argc, char** argv)
             printf("ELF CRC=%08X\n", REP->crc);
         }
         if (CTX & PS2RD_ALA) printf("\nMastercode\n");
-	    for (i = 0, P = -1; i < REP->results; i++)
-	    {
-	    	if (REP->results_list[i].target_address)
-	    	{
-	    	    X++;
-	    	    if (CTX & ONLY_SUITABLE_MASTERCODE) // dont print
-	    	        ;
-	    	    else if (CTX & PS2RD_ALA) {
-	    		    printf("9%07X %08X",
-                        REP->results_list[i].target_address,
-                        REP->results_list[i].target_data
-                     );
-                    if (CTX & COMMENT_MASTERCODE) printf(" //%s\n", REP->results_list[i].type); else printf("\n");
-                } else if (CTX & CRUDE) {
-	    		    printf("9%07X %08X\n",
-                        REP->results_list[i].target_address,
-                        REP->results_list[i].target_data);
-                } else {
-	    		    printf("%-*s: 9%07X %08X\n",
-                        16, REP->results_list[i].type,
-                        REP->results_list[i].target_address,
-                        REP->results_list[i].target_data);
+        for (i = 0, P = -1; i < REP->results; i++)
+        {
+            if (REP->results_list[i].target_address)
+            {
+                X++;
+                if (CTX & ONLY_SUITABLE_MASTERCODE) // dont print
+                    ;
+                else if (CTX & PS2RD_ALA)
+                {
+                    printf("9%07X %08X",
+                           REP->results_list[i].target_address,
+                           REP->results_list[i].target_data
+                          );
+                    if (CTX & COMMENT_MASTERCODE) printf(" //%s\n", REP->results_list[i].type);
+                    else printf("\n");
+                }
+                else if (CTX & CRUDE)
+                {
+                    printf("9%07X %08X\n",
+                           REP->results_list[i].target_address,
+                           REP->results_list[i].target_data);
+                }
+                else
+                {
+                    printf("%-*s: 9%07X %08X\n",
+                           16, REP->results_list[i].type,
+                           REP->results_list[i].target_address,
+                           REP->results_list[i].target_data);
                 }
                 if (!strcasecmp("sceSifSendCmd", REP->results_list[i].type))
                 {
                     P = i;
                 }
-	    	}
-	    }
-	    if (X == 0) {
+            }
+        }
+        if (X == 0)
+        {
             fprintf(stderr, "Could not find any mastercode\n");
             return 1;
-	    }
-	    if (P == -1) P = 0; // no sceSifSendCmd found, fall back to the last mastercode found...
-	    if (CTX & ONLY_SUITABLE_MASTERCODE)
+        }
+        if (P == -1) P = 0; // no sceSifSendCmd found, fall back to the last mastercode found...
+        if (CTX & ONLY_SUITABLE_MASTERCODE)
         {
-	        printf("9%07X %08X", REP->results_list[P].target_address, REP->results_list[P].target_data);
-            if (CTX & COMMENT_MASTERCODE) printf(" //%s\n", REP->results_list[P].type); else printf("\n");
+            printf("9%07X %08X", REP->results_list[P].target_address, REP->results_list[P].target_data);
+            if (CTX & COMMENT_MASTERCODE) printf(" //%s\n", REP->results_list[P].type);
+            else printf("\n");
         }
         if (CTX & DETAIL_REPORT) puts("\n\n"), puts(REP->extended_report);
         elf_free_report(REP);
-    } else {
+    }
+    else
+    {
         help();
         return 1;
     }
