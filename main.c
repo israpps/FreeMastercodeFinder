@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <stdlib.h>
+#include <string.h>
 #include "elf.h"
 
 #define SHIFT(N) (1 << N)
