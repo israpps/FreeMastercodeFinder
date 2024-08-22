@@ -30,13 +30,7 @@
 #include <string.h>
 
 #ifndef PS2RD_VERSION
-#include <malloc.h>
-
-#if !defined(_MSC_VER) || (defined(_MSC_VER) && !defined(_MT))
-//		#define malloc(x)     HeapAlloc  (GetProcessHeap(), 0, x)
-//		#define realloc(x, y) HeapReAlloc(GetProcessHeap(), 0, x, y)
-//		#define free(x)	      HeapFree   (GetProcessHeap(), 0, x)
-#endif
+#include <stdlib.h>
 #include "ps2types.h"
 #else
 #include <fileio.h>
@@ -515,13 +509,13 @@ report_t *elf_analyze(char *elf_file)
                                     {
                                         if (elf_function_list[k]->jal_relative_offset)
                                         {
-                                            difference = (((s32)*data & ~0xfc000000) << 2) - ((u32)data - (u32)elf->elf + (u32)elf->virtual_offset[t]) - (s32)(elf_function_list[k]->jal_relative_offset << 2);
+                                            difference = (((s32)*data & ~0xfc000000) << 2) - ((uptr)data - (uptr)elf->elf + (u32)elf->virtual_offset[t]) - (s32)(elf_function_list[k]->jal_relative_offset << 2);
                                             difference = (difference < 0 ? -difference : difference) >> 2;
 
                                             if ((u32)difference <= elf_function_list[k]->jal_relative_offset_tolerance)
                                             {
-                                                elf_function_list[k]->address = (u32)data - (u32)elf->elf + (u32)elf->virtual_offset[t] - ((elf_function_list[k]->counter - 1) << 2);
-                                                elf_function_list[k]->target_address = (u32)data - (u32)elf->elf + (u32)elf->virtual_offset[t] + (elf_function_list[k]->target_jal_offset << 2);
+                                                elf_function_list[k]->address = (uptr)data - (uptr)elf->elf + (u32)elf->virtual_offset[t] - ((elf_function_list[k]->counter - 1) << 2);
+                                                elf_function_list[k]->target_address = (uptr)data - (uptr)elf->elf + (u32)elf->virtual_offset[t] + (elf_function_list[k]->target_jal_offset << 2);
                                                 report.results_list[k - 1].segment = t;
                                                 elf_function_list[k]->matches++;
 
@@ -532,8 +526,8 @@ report_t *elf_analyze(char *elf_file)
                                         }
                                         else //Do not verify JAL target
                                         {
-                                            elf_function_list[k]->address = (u32)data - (u32)elf->elf + (u32)elf->virtual_offset[t] - ((elf_function_list[k]->counter - 1) << 2);
-                                            elf_function_list[k]->target_address = (u32)data - (u32)elf->elf + (u32)elf->virtual_offset[t] + (elf_function_list[k]->target_jal_offset << 2);
+                                            elf_function_list[k]->address = (uptr)data - (uptr)elf->elf + (u32)elf->virtual_offset[t] - ((elf_function_list[k]->counter - 1) << 2);
+                                            elf_function_list[k]->target_address = (uptr)data - (uptr)elf->elf + (u32)elf->virtual_offset[t] + (elf_function_list[k]->target_jal_offset << 2);
                                             report.results_list[k - 1].segment = t;
                                             elf_function_list[k]->matches++;
 
@@ -544,9 +538,9 @@ report_t *elf_analyze(char *elf_file)
                                     }
                                     else
                                     {
-                                        elf_function_list[k]->address = ((u32)data - (u32)elf->elf + (u32)elf->virtual_offset[t] - ((elf_function_list[k]->counter - 1) << 2));
+                                        elf_function_list[k]->address = ((uptr)data - (uptr)elf->elf + (u32)elf->virtual_offset[t] - ((elf_function_list[k]->counter - 1) << 2));
                                         //This will be verified later (target_jal_offset will be added if verified)
-                                        elf_function_list[k]->target_address = (u32)data - (u32)elf->elf + (u32)elf->virtual_offset[t];
+                                        elf_function_list[k]->target_address = (uptr)data - (uptr)elf->elf + (u32)elf->virtual_offset[t];
                                         report.results_list[k - 1].segment = t;
                                         elf_function_list[k]->matches++;
                                     }
@@ -579,7 +573,7 @@ report_t *elf_analyze(char *elf_file)
                         //Declare found if function requires only initial instruction comparison
                         if (!elf_function_list[k]->jal_count)
                         {
-                            elf_function_list[k]->address = (u32)data - (u32)elf->elf + (u32)elf->virtual_offset[t] - ((elf_function_list[k]->counter - 1) << 2);
+                            elf_function_list[k]->address = (uptr)data - (uptr)elf->elf + (u32)elf->virtual_offset[t] - ((elf_function_list[k]->counter - 1) << 2);
                             elf_function_list[k]->matches++;
 
                             //Locate target if required
@@ -599,7 +593,7 @@ report_t *elf_analyze(char *elf_file)
                 }
                 else if (elf_function_list[k]->candidates >= -2)
                 {
-                    address = (u32)data - (u32)elf->elf + (u32)elf->virtual_offset[t];
+                    address = (uptr)data - (uptr)elf->elf + (u32)elf->virtual_offset[t];
 
                     if (address >= (elf_function_list[k]->address + (elf_function_list[k]->length << 2)))
                     {
@@ -664,7 +658,7 @@ report_t *elf_analyze(char *elf_file)
                     if (!elf_function_list[k]->counter)
                     {
                         report.results_list[k - 1].segment = t;
-                        address = (u32)data - (u32)elf->elf + (u32)elf->virtual_offset[t];
+                        address = (uptr)data - (uptr)elf->elf + (u32)elf->virtual_offset[t];
 
                         if (address >= elf_function_list[k]->address)
                         {
@@ -741,7 +735,7 @@ report_t *elf_analyze(char *elf_file)
         //If JAL address confirmed function was found - verify address
         if (elf_function_list[k]->address && elf_function_list[k]->target_address && elf_function_list[k]->jal_count && elf_function_list[k]->jal_address != &elf_function_list[0]->address)
         {
-            if (((*(u32*)(elf_function_list[k]->target_address + (u32)elf->elf - (u32)elf->virtual_offset[report.results_list[k - 1].segment]) & ~0xfc000000) << 2) == *elf_function_list[k]->jal_address)
+            if (((*(u32*)(elf_function_list[k]->target_address + (uptr)elf->elf - (u32)elf->virtual_offset[report.results_list[k - 1].segment]) & ~0xfc000000) << 2) == *elf_function_list[k]->jal_address)
             {
 #ifdef ELF_DEBUG
                 if (elf_function_list[k]->candidates == -1)
@@ -779,7 +773,7 @@ report_t *elf_analyze(char *elf_file)
 
         if (report.results_list[i].target_address)
         {
-            report.results_list[i].target_data = *(u32 *)((u32)elf->elf + elf_function_list[k]->target_address - (u32)elf->virtual_offset[report.results_list[i].segment]);
+            report.results_list[i].target_data = *(u32 *)((uptr)elf->elf + elf_function_list[k]->target_address - (u32)elf->virtual_offset[report.results_list[i].segment]);
         }
     }
 
